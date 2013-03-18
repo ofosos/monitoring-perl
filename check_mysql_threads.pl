@@ -9,6 +9,9 @@
 # Copyright (c) 2013 - akquinet outsourcing gGmbH
 # Written by Mark Meyer (mark.meyer@akquinet.de)
 
+# Notes:
+# This requires a user with PROCESS privileges.
+
 use strict;
 use warnings;
 
