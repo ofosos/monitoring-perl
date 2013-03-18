@@ -6,6 +6,9 @@
 # when that state is 'Sleep'. On any other occasion spending a lot of
 # time is an indicator that some things are seriously wrong.
 
+# Copyright (c) 2013 - akquinet outsourcing gGmbH
+# Written by Mark Meyer (mark.meyer@akquinet.de)
+
 use strict;
 use warnings;
 
