@@ -115,6 +115,11 @@ for my $t (@badthreads) {
 	push @msg, "u=" . $t->{User} . ",c=" . $t->{Command} . ",t=" . $t->{Time} . ",s=" . $t->{State} . ",i=" . $t->{Info};
 }
 
+$np->add_perfdata(
+	label => 'Total threads',
+	value => $cntthreads,
+	);
+
 for my $k (keys(%threadstatus)) {
 	$np->add_perfdata(
 		label => $k,
