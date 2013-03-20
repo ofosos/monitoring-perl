@@ -26,6 +26,8 @@ Usage:
      [-p|--password=<database password> ]
      [-c|--critical=<badthreads> ]
      [-w|--warning=<badthreads> ]
+     [-t|--warnthreads=<maxthreads> ]
+     [-s|--critthreads=<maxthreads> ]
 
 FIN
 
@@ -70,10 +72,20 @@ $np->add_arg(
 	default => 10,
 	);
 
+$np->add_arg(
+	spec => 'warnthreads|t=i',
+	help => '-m, --maxthreads=INTEGER warning level of threads',
+	);
+
+$np->add_arg(
+	spec => 'critthreads|s=i',
+	help => '-u, --critthreads=INTEGER critical level of threads',
+	);
+
 $np->getopts;
 
 my $dbh = DBI->connect('DBI:mysql:mysql:' . $np->opts->host, $np->opts->user, $np->opts->password)
-	or die "Couldn't connect to database: " . DBI->errstr;
+	or $np->nagios_die("Couldn't connect to database: " . DBI->errstr);
 
 my $sth = $dbh->prepare('show full processlist');
 
@@ -83,10 +95,13 @@ my $threads = $sth->fetchall_arrayref({});
 
 my @badthreads = ();
 
+my $cntthreads = 0;
+
 for my $t (@{$threads}) {
 	if ($t->{Time} > $np->opts->limit && $t->{Command} !~ /Sleep/i) {
 		push @badthreads, $t;
 	}
+	$cntthreads ++;
 }
 
 my @msg = ();
@@ -96,10 +111,13 @@ for my $t (@badthreads) {
 
 
 my $msgtxt;
+
+$msgtxt = "Overall $cntthreads active threads. ";
+
 if (@msg > 0) {
-	$msgtxt = "Bad threads detected: " . join('; ',@msg);
+	$msgtxt .= "Bad threads detected: " . join('; ',@msg);
 } else {
-	$msgtxt = "No bad threads detected.";
+	$msgtxt .= "No bad threads detected.";
 }
 
 if (@msg > $np->opts->warning) {
@@ -107,9 +125,16 @@ if (@msg > $np->opts->warning) {
 		$np->nagios_exit(CRITICAL, $msgtxt);
 	}
 
-	$np->nagios_exit(WARNING, $msgtxt);
+	if ($np->opts->critthreads and $np->opts->critthreads <= $cntthreads) {
+		$np->nagios_exit(CRITICAL, $msgtxt);
+	} else {
+		$np->nagios_exit(WARNING, $msgtxt);
+	}
 }
 
+if ($np->opts->warnthreads and $np->opts->warnthreads <= $cntthreads) {
+	$np->nagios_exit(WARNING, $msgtxt);
+}
 $np->nagios_exit(OK, $msgtxt);
 
 
