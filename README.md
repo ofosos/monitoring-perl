@@ -1,8 +1,7 @@
 monitoring-perl
 ===============
 
-A repository for Nagios/Icinga perl plugins I use. All copyrighted by my
-employer, but mostly developed at home.
+A repository for Nagios/Icinga perl plugins I use.
 
 check_mysql_threads.pl
 ----------------------
