@@ -96,10 +96,16 @@ my $threads = $sth->fetchall_arrayref({});
 my @badthreads = ();
 
 my $cntthreads = 0;
+my %threadstatus = ();
 
 for my $t (@{$threads}) {
 	if ($t->{Time} > $np->opts->limit && $t->{Command} !~ /Sleep/i) {
 		push @badthreads, $t;
+	}
+	if (defined($threadstatus{$t->{Command}})) {
+		$threadstatus{$t->{Command}} ++;
+	} else {
+		$threadstatus{$t->{Command}} = 1;
 	}
 	$cntthreads ++;
 }
@@ -109,6 +115,12 @@ for my $t (@badthreads) {
 	push @msg, "u=" . $t->{User} . ",c=" . $t->{Command} . ",t=" . $t->{Time} . ",s=" . $t->{State} . ",i=" . $t->{Info};
 }
 
+for my $k (keys(%threadstatus)) {
+	$np->add_perfdata(
+		label => $k,
+		value => $threadstatus{$k},
+		);
+}
 
 my $msgtxt;
 
